@@ -11,6 +11,26 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     return NextResponse.json(data);
 }
 
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const { title, content } = await req.json();
+
+    if (!title || !content) {
+        return NextResponse.json({ error: "Title and content are required" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+        .from("posts")
+        .update({ title, content })
+        .eq("id", Number(id))
+        .select()
+        .maybeSingle();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    return NextResponse.json(data);
+}
+
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
